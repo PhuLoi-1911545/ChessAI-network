@@ -5,12 +5,12 @@ import ChessAI
 import time
 import sys
 from ChessTypes import *
-EASY_MODE = "EASY"
-MEDIUM_MODE = "MEDIUM"
-HARD_MODE = "HARD"
+EASY_MODE = "1"
+MEDIUM_MODE = "2"
+HARD_MODE = "3"
 
-SCREEN_MODE = "SCREEN"
-TERMINAL_MODE = "TERMINAL"
+SCREEN_MODE = "MAN"
+TERMINAL_MODE = "AUTO"
 
 OUR_AI_WHITE = "WHITE_AGENT_OPPONENT_BLACK"
 OUR_AI_BLACK = "BLACK_AGENT_OPPONENT_WHITE"
@@ -49,7 +49,7 @@ FISRTMOVE = True
 #             ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp']]
 
 
-def main(auto_mode=SCREEN_MODE, mode=EASY_MODE, player_option=OUR_AI_WHITE):
+def main(auto_mode=SCREEN_MODE, mode=EASY_MODE):
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
     p.display.set_caption("Auto Chess", "None")
@@ -61,7 +61,7 @@ def main(auto_mode=SCREEN_MODE, mode=EASY_MODE, player_option=OUR_AI_WHITE):
     global COLORGAME
     global FISRTMOVE
     mode = mode
-    player_option = player_option
+    # player_option = player_option
     strategy = ChessAI.MIN_MAX_WITHOUT_PRUNING
 
     # Machine Learning
@@ -584,15 +584,15 @@ if __name__ == "__main__":
     if len(sys.argv) >= 2:
         AUTO_MODE = sys.argv[1]
         HARDNESS = sys.argv[2]
-        OPTION = sys.argv[3]
+        # OPTION = sys.argv[3]
         if AUTO_MODE not in available_auto_modes:
             sys.exit(
                 "Not found auto mode: AUTO_MODE = SCREEN_MODE || TERMINAL_MODE ")
         if HARDNESS not in available_hard_ness_modes:
             sys.exit(f"Not found auto mode: {available_hard_ness_modes}")
-        if OPTION not in available_option:
-            sys.exit(f"Not found auto mode: {available_option}")
+        # if OPTION not in available_option:
+        #     sys.exit(f"Not found auto mode: {available_option}")
         print(f"START GAME WITH ARGS: {sys.argv}")
-        main(auto_mode=AUTO_MODE, mode=HARDNESS, player_option=OPTION)
+        main(auto_mode=AUTO_MODE, mode=HARDNESS)
     else:
         main(auto_mode=SCREEN_MODE)
