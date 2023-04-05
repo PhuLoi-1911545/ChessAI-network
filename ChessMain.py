@@ -249,6 +249,9 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
                             gameOver = False
                             p1Time = p2Time = 1800
                             drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
+                            
+                            
+                            
                     if PAUSE:
                         continue
                     
@@ -295,6 +298,11 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
                     moveMade = True
                     gameOver = False
         ######################################################################################
+        
+        if PAUSE:
+            continue
+        
+        
         # ChessAI turn
         if not gameOver and not humanTurn and motlan:
             # move = ChessAI.findBestMoveMinMax(gameState, validMoves)
