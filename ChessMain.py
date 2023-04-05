@@ -47,7 +47,7 @@ PAUSE = False
 #             ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 #             ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp']]
 
-def main(auto_mode=SCREEN_MODE, mode=MEDIUM_MODE):
+def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
     p.display.set_caption("Auto Chess", "None")
