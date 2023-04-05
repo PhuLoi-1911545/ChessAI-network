@@ -1,8 +1,9 @@
 import random
+
 from ChessEngine import GameState
 
 piecesScore = {
-    "K": 0, "Q": 90, "R": 50,
+    "K": 900, "Q": 90, "R": 50,
     "B": 30, "N": 30, "p": 10
 }
 
@@ -72,7 +73,7 @@ wp = [
 
 CHECKMATE = 1000
 STALEMATE = -10000
-DEPTH = 2
+DEPTH = 3
 
 MAX_PLAYER_WORST = -10000
 MIN_PLAYER_WORST = 10000
@@ -80,10 +81,9 @@ MIN_PLAYER_WORST = 10000
 MIN_MAX_WITHOUT_PRUNING = 1
 MIN_MAX_WITH_BETA_PRUNING = 2
 MIN_MAX_WITHOUT_PRUNING_EASY = 3
-NAIVE_BAYES_ML = 4
 
 
-def move_with_strategy(gs: GameState, depth: int = 2, strategy=MIN_MAX_WITH_BETA_PRUNING, validMoves=None, chess_ml_engine = None):
+def move_with_strategy(gs: GameState, depth: int = 2, strategy=MIN_MAX_WITH_BETA_PRUNING, validMoves=None):
     global nextMove
     nextMove = None
     if strategy == MIN_MAX_WITH_BETA_PRUNING:
@@ -94,13 +94,6 @@ def move_with_strategy(gs: GameState, depth: int = 2, strategy=MIN_MAX_WITH_BETA
     # elif strategy == MIN_MAX_WITHOUT_PRUNING_EASY:
     #     # Move chosen is almost random
     #     findBestMoveMinMaxEasy(gs=gs, validMoves=validMoves, depth=1)
-    elif strategy == NAIVE_BAYES_ML:
-        if not chess_ml_engine:
-            print("Engine not loading when making move")
-            raise Error("Unloaded Chess Engine")
-        from ChessHelper import ChessHelper
-        board_fen = ChessHelper.board_to_fen(gs.board)
-        nextMove = chess_ml_engine.predict_next_move(validMoves,board_fen )
     else:
         if depth > 1:
             findBestMoveMinMax(gs, validMoves, depth)
@@ -265,6 +258,8 @@ def findBestMoveMinMaxEasy(gs, validMoves):
 
 def findMoveMinMaxEasy(gs, validMoves, depth, whiteToMove):
     global nextMove
+    global testVar
+    testVar = 5
     if depth == 0:
         return scoreMaterial(gs.board)
     if whiteToMove:
