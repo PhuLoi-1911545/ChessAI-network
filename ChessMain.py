@@ -159,7 +159,7 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
                         # Menu
                         if 63 <= location[1] < 113:
                             # isPlaying = False
-                            PAUSE = True
+                            PAUSE = not PAUSE
                         # Start a new 1 player game
                         if 150 <= location[1] < 200:
                             gameState = ChessEngine.GameState()
@@ -388,6 +388,7 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
             #     gameOverText(screen, gameState.whiteToMove)
             # else:
             #     gameOverText(screen, ~gameState.whiteToMove)
+        
         if gameState.whiteToMove:
             p1Time -= time.time() - start_time if p1Time > 0 else 0
         else:
