@@ -4,6 +4,14 @@ import ChessEngine
 import ChessAI
 import time
 import sys
+import socket
+import threading
+
+HOST = '127.0.0.1'
+SERVER_PORT = 65432
+FORMAT = 'utf8'
+
+
 
 EASY_MODE = "1"
 MEDIUM_MODE = "2"
@@ -47,32 +55,104 @@ PAUSE = False
 #             ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 #             ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp']]
 
+
+def connect_server():
+    global client, turned, start_threading, screen
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print('CLIENT SIDE')
+    client.connect((HOST, SERVER_PORT))
+    print('client address:', client.getsockname())
+    msg = "USERNAME alo address:"
+    client.sendall(msg.encode(FORMAT))
+
+    msg = client.recv(1024).decode(FORMAT)
+    if msg == 'WHITE':
+        print('Your chess: WHITE')
+        turned = True
+        start_threading = False
+    else:
+        print('Your chess: BLACK')
+        turned = False
+        start_threading = True
+
+def recv_mess():
+    global turned, client, ok, gameState, moveMade
+    
+    try:
+        msg = client.recv(1024).decode(FORMAT)
+    except:
+        return
+   
+    msg = msg.split(' ')
+
+    if (msg[0] == 'MOVE'):
+        turned = True
+        move = ChessEngine.Move((int(msg[1]), int(msg[2])), (int(msg[3]), int(msg[4])), gameState.board)
+        gameState.makeMove(move)
+        moveMade = True
+        
+    if msg[0] == 'EXIT2':
+        print('LOSE')
+        ok = False
+        client.sendall("EXIT".encode(FORMAT))
+
 def main(mode=MEDIUM_MODE):
+    global client, turned, start_threading
+    connect_server()
+
     p.init()
+    global screen
     screen = p.display.set_mode((WIDTH, HEIGHT))
     p.display.set_caption("Auto Chess", "None")
-    menuGame = True
     isPlaying = False  # Start a game
     playerOne = True
     playerTwo = True
-    playerAI = False
     global COLORGAME
     global FISRTMOVE
     mode = mode
+    strategy = ChessAI.MIN_MAX_WITHOUT_PRUNING
+    # In Menu:
 
-
+    # elif auto_mode == TERMINAL_MODE:
     playerOne = True
     playerTwo = True
-
+    # playerAI = True
+    # if player_option == OUR_AI_WHITE:
+    # playerOne = False
+    # playerTwo = False
+    # playerAI = True
+    # FIRSTMOVE = True
+    # elif player_option == OUR_AI_BLACK:
+    # playerOne = False
+    # playerTwo = False
+    # playerAI = True
+    # FIRSTMOVE = False
+    # else:
+    #     playerOne = False
+    #     playerTwo = False
+    #     playerAI = True
     isPlaying = True
 
 
     loadImages()  # Load images of pieces, board
     clock = p.time.Clock()
+    global gameState
     gameState = ChessEngine.GameState()
 
+    # if player_option == OUR_AI_WHITE:
+    #     # FIRSTMOVE = False
+    #     COLORGAME = not COLORGAME
+    # elif player_option == OUR_AI_BLACK:
+    #     # FIRSTMOVE = True
+    #     COLORGAME = not COLORGAME
+    # gameState.whiteToMove = FISRTMOVE
+
+    # EasyAI
+    # if gameState.color == 1:
+    #     gameState.board = boardreverse
     validMoves = gameState.getValidMoves()  # Get all the valid move
-    moveMade = False  # Moving a piece
+    global moveMade # Moving a piece
+    moveMade = False
     gameOver = False
     sqSelected = ()  # Square player selected (tuple)
     playerClicks = []  # keep track of player clicks (2 tuples: [(6, 4), (4, 4)]
@@ -88,6 +168,21 @@ def main(mode=MEDIUM_MODE):
         # If player 1 turn and white turn or player 2 turn and black turn
         humanTurn = (gameState.whiteToMove and playerOne) or (not gameState.whiteToMove and playerTwo)
         # AIEasyTurn = (not gameState.whiteToMove and playerAI)
+       
+        print('turned', turned, 'start_threading', start_threading) 
+
+        # if (turned == False):
+        #     for e in p.event.get():
+        #         if e.type == p.QUIT:
+        #             isPlaying = False
+                    
+        #     drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
+            
+        #     if (start_threading == True):
+        #         start_threading = False
+        #         thr = threading.Thread(target=recv_mess)
+        #         thr.start()
+        
         for e in p.event.get():
             if e.type == p.QUIT:
                 isPlaying = False
@@ -101,20 +196,20 @@ def main(mode=MEDIUM_MODE):
                         # Menu
                         if 63 <= location[1] < 113:
                             # isPlaying = False
-                            PAUSE = not PAUSE
+                            PAUSE = True
                         # Start a new 1 player game
                         if 150 <= location[1] < 200:
                             gameState = ChessEngine.GameState()
 
-                            # global COLORGAME
-                            COLORGAME = not COLORGAME
-                            loadImages()
+                        #         # global COLORGAME
+                        #         COLORGAME = not COLORGAME
+                        #         loadImages()
 
                             validMoves = gameState.getValidMoves()  # Get all the valid move
                             moveMade = False  # Moving a piece
                             gameOver = False
                             playerOne = True
-                            playerTwo = True
+                            playerTwo = False
                             # playerAI = False
                             p1Time = p2Time = 1800
                             humanTurn = (gameState.whiteToMove and playerOne) or (
@@ -150,19 +245,27 @@ def main(mode=MEDIUM_MODE):
                         if 330 <= location[1] < 380:
                             gameState = ChessEngine.GameState()
 
+                            # gameState.whiteToMove = bool(random.getrandbits(1))
                             # global COLORGAME
                             COLORGAME = not COLORGAME
+                            FISRTMOVE = not FISRTMOVE
+                            # Our Agent:  True  --> Go first, False --> Go Second
+
+                            # if player_option == OUR_AI_WHITE:
+                            #     FIRSTMOVE = True
+                            # elif player_option == OUR_AI_BLACK:
+                            #     FIRSTMOVE = False
+
+                            gameState.whiteToMove = FISRTMOVE
                             loadImages()
 
                             validMoves = gameState.getValidMoves()  # Get all the valid move
                             moveMade = False  # Moving a piece
                             gameOver = False
-                            playerOne = True
-                            playerTwo = True
-                            # playerAI = False
+                            playerOne = False
+                            playerTwo = False
+                            # playerAI = True
                             p1Time = p2Time = 1800
-                            humanTurn = (gameState.whiteToMove and playerOne) or (
-                                    not gameState.whiteToMove and playerTwo)
                             drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
                         # Undo
                         if 417 <= location[1] < 471 and not gameOver:
@@ -218,9 +321,6 @@ def main(mode=MEDIUM_MODE):
                                 # move not in valid moves
                                 if not moveMade:
                                     playerClicks = [sqSelected]
-                                    
-                                    
-                                    
                 # RIGHT CLICK
                 elif e.button == 3 and not gameOver:
                     # PvP game
@@ -231,10 +331,47 @@ def main(mode=MEDIUM_MODE):
                         gameState.undoMove()
                     moveMade = True
                     gameOver = False
+        ######################################################################################
+        # ChessAI turn
+        # if not gameOver and not humanTurn and motlan:
+        #     # move = ChessAI.findBestMoveMinMax(gameState, validMoves)
+        #     depth = 2
+        #     if mode == EASY_MODE:
+        #         depth = 1
+        #     elif mode == MEDIUM_MODE:
+        #         depth = 2
+        #     elif mode == HARD_MODE:
+        #         depth = 3
 
-        if PAUSE:
-            continue
-        
+        #     # print(f"RUNNING GAME WITH:AUTO_MODE = {auto_mode}  | MODE = {mode}  | STRATEGY = {strategy}")
+        #     # Opponent AI
+        #     strategy_to_use = ChessAI.MIN_MAX_WITHOUT_PRUNING 
+        #     # strategy_to_use = ChessAI.MIN_MAX_WITH_BETA_PRUNING
+        #     # strategy_to_use=None
+        #     if AIEasyTurn:
+        #         move = ChessAI.move_with_strategy(gs=gameState, depth=1, strategy=strategy_to_use,
+        #                                           validMoves=validMoves)
+        #         # time.sleep(0.5)
+        #     # Our AI Agent
+        #     elif not AIEasyTurn:
+        #         move = ChessAI.move_with_strategy(gameState, depth, strategy_to_use, validMoves)
+
+        #     # if AIEasyTurn:
+        #     #     move = ChessAIEasy.findBestMoveMinMax(gameState, validMoves)
+        #     #     # time.sleep(0.5)
+        #     # elif not AIEasyTurn:
+        #     #     move = ChessAI.findBestMoveMinMax(gameState, validMoves)
+
+        #     # if AILEVEL == MEDIUM_MODE:
+        #     #     move = ChessAI.findBestMoveMinMax(gameState, validMoves)
+        #     # else:
+        #     #     move = ChessAIEasy.findBestMoveMinMax(gameState, validMoves)
+
+        #     if move is None:
+        #         move = ChessAI.findRandomMove(validMoves)
+        #     gameState.makeMove(move)
+        #     moveMade = True
+
         if moveMade:
             validMoves = gameState.getValidMoves()
             moveMade = False
@@ -282,11 +419,9 @@ def main(mode=MEDIUM_MODE):
         clock.tick(MAX_FPS)
         p.display.flip()
 
-
 '''
 Initialize a global dictionary of images. This will be called exactly once in the main
 '''
-
 
 def loadImages():
     pieces = ['bR', 'bN', 'bB', 'bQ', 'bK', 'bp', 'wB', 'wN', 'wR', 'wQ', 'wK', 'wp']
@@ -305,12 +440,10 @@ def loadImages():
         image_path = os.path.join(os.curdir, "images", block + ".png")
         IMAGES[block] = p.transform.scale(p.image.load("images/" + block + ".png"), (SQ_SIZE, SQ_SIZE))
 
-
 def drawMenuState(screen):
     # Cai menu 1 nay moi la menu :v
     board = p.transform.scale(p.image.load("chessv2/menu1.png"), (WIDTH, HEIGHT))
     screen.blit(board, (0, 0))
-
 
 def drawGameState(screen, gameState, validMoves, sqSelected):
     # Board
@@ -324,11 +457,9 @@ def drawGameState(screen, gameState, validMoves, sqSelected):
     # Move log
     drawMoveLog(screen, gameState)
 
-
 def drawBroad(screen):
     board = p.transform.scale(p.image.load("chessv2/board2big.png"), (BOARD + BORDER * 2, BOARD + BORDER * 2))
     screen.blit(board, (MENU, TIME))
-
 
 def highlightPiece(screen, gameState, sqSelected):
     if sqSelected != ():
@@ -340,7 +471,6 @@ def highlightPiece(screen, gameState, sqSelected):
                 s.fill(p.Color('#004CFF'))
                 screen.blit(s, (c * SQ_SIZE + BORDER + MENU, r * SQ_SIZE + BORDER + TIME))
 
-
 def drawPieces(screen, board):
     for r in range(DIMENSION):
         for c in range(DIMENSION):
@@ -348,7 +478,6 @@ def drawPieces(screen, board):
             if piece != '--':  # Not empty
                 screen.blit(IMAGES[piece],
                             p.Rect(c * SQ_SIZE + BORDER + MENU, r * SQ_SIZE + BORDER + TIME, SQ_SIZE, SQ_SIZE))
-
 
 def highlightMoves(screen, gameState, validMoves, sqSelected):
     if sqSelected != ():
@@ -360,7 +489,6 @@ def highlightMoves(screen, gameState, validMoves, sqSelected):
                         p.draw.circle(screen, p.Color('#004CFF'), (
                             (move.endCol + 0.5) * SQ_SIZE + BORDER + MENU,
                             (move.endRow + 0.5) * SQ_SIZE + BORDER + TIME), 12)
-
 
 def drawTime(screen, p1time, p2time, whiteToMove, gameOver):
     if not gameOver:
@@ -408,7 +536,6 @@ def drawTime(screen, p1time, p2time, whiteToMove, gameOver):
         screen.blit(textPlayer2, textPlayer2Location)
     return gameOver
 
-
 def gameOverText(screen, whiteToMove):
     color = p.Color('#121212') if whiteToMove else p.Color('#D9D2D2')
     font = p.font.Font('freesansbold.ttf', 100)
@@ -423,7 +550,6 @@ def gameOverText(screen, whiteToMove):
     textLocation = p.Rect(SQ_SIZE * 4 + BORDER - textObj.get_width() / 2 + MENU,
                           SQ_SIZE * 4 + BORDER + TIME - textObj.get_height() / 2, 60, 60)
     screen.blit(textObj, textLocation)
-
 
 def drawMoveLog(screen, gs):
     font_path = os.path.join(os.curdir, "Font", "seguisym.ttf")
@@ -455,7 +581,6 @@ def drawMoveLog(screen, gs):
 
 
 if __name__ == "__main__":
-    # available_auto_modes = [SCREEN_MODE, TERMINAL_MODE]
 
     main()
 #  py .\chessMain.py MAN 3

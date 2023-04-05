@@ -47,7 +47,7 @@ PAUSE = False
 #             ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 #             ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp']]
 
-def main(auto_mode=SCREEN_MODE, mode=MEDIUM_MODE):
+def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
     p.display.set_caption("Auto Chess", "None")
@@ -249,6 +249,9 @@ def main(auto_mode=SCREEN_MODE, mode=MEDIUM_MODE):
                             gameOver = False
                             p1Time = p2Time = 1800
                             drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
+                            
+                            
+                            
                     if PAUSE:
                         continue
                     
@@ -295,6 +298,11 @@ def main(auto_mode=SCREEN_MODE, mode=MEDIUM_MODE):
                     moveMade = True
                     gameOver = False
         ######################################################################################
+        
+        if PAUSE:
+            continue
+        
+        
         # ChessAI turn
         if not gameOver and not humanTurn and motlan:
             # move = ChessAI.findBestMoveMinMax(gameState, validMoves)
