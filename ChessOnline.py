@@ -59,45 +59,18 @@ def main(mode=MEDIUM_MODE):
     global COLORGAME
     global FISRTMOVE
     mode = mode
-    strategy = ChessAI.MIN_MAX_WITHOUT_PRUNING
-    # In Menu:
 
-    # elif auto_mode == TERMINAL_MODE:
+
     playerOne = True
     playerTwo = True
-    # playerAI = True
-    # if player_option == OUR_AI_WHITE:
-    # playerOne = False
-    # playerTwo = False
-    # playerAI = True
-    # FIRSTMOVE = True
-    # elif player_option == OUR_AI_BLACK:
-    # playerOne = False
-    # playerTwo = False
-    # playerAI = True
-    # FIRSTMOVE = False
-    # else:
-    #     playerOne = False
-    #     playerTwo = False
-    #     playerAI = True
+
     isPlaying = True
-    menuGame = False
+
 
     loadImages()  # Load images of pieces, board
     clock = p.time.Clock()
     gameState = ChessEngine.GameState()
 
-    # if player_option == OUR_AI_WHITE:
-    #     # FIRSTMOVE = False
-    #     COLORGAME = not COLORGAME
-    # elif player_option == OUR_AI_BLACK:
-    #     # FIRSTMOVE = True
-    #     COLORGAME = not COLORGAME
-    # gameState.whiteToMove = FISRTMOVE
-
-    # EasyAI
-    # if gameState.color == 1:
-    #     gameState.board = boardreverse
     validMoves = gameState.getValidMoves()  # Get all the valid move
     moveMade = False  # Moving a piece
     gameOver = False
@@ -128,7 +101,7 @@ def main(mode=MEDIUM_MODE):
                         # Menu
                         if 63 <= location[1] < 113:
                             # isPlaying = False
-                            PAUSE = True
+                            PAUSE = not PAUSE
                         # Start a new 1 player game
                         if 150 <= location[1] < 200:
                             gameState = ChessEngine.GameState()
@@ -141,7 +114,7 @@ def main(mode=MEDIUM_MODE):
                             moveMade = False  # Moving a piece
                             gameOver = False
                             playerOne = True
-                            playerTwo = False
+                            playerTwo = True
                             # playerAI = False
                             p1Time = p2Time = 1800
                             humanTurn = (gameState.whiteToMove and playerOne) or (
@@ -177,27 +150,19 @@ def main(mode=MEDIUM_MODE):
                         if 330 <= location[1] < 380:
                             gameState = ChessEngine.GameState()
 
-                            # gameState.whiteToMove = bool(random.getrandbits(1))
                             # global COLORGAME
                             COLORGAME = not COLORGAME
-                            FISRTMOVE = not FISRTMOVE
-                            # Our Agent:  True  --> Go first, False --> Go Second
-
-                            # if player_option == OUR_AI_WHITE:
-                            #     FIRSTMOVE = True
-                            # elif player_option == OUR_AI_BLACK:
-                            #     FIRSTMOVE = False
-
-                            gameState.whiteToMove = FISRTMOVE
                             loadImages()
 
                             validMoves = gameState.getValidMoves()  # Get all the valid move
                             moveMade = False  # Moving a piece
                             gameOver = False
-                            playerOne = False
-                            playerTwo = False
-                            # playerAI = True
+                            playerOne = True
+                            playerTwo = True
+                            # playerAI = False
                             p1Time = p2Time = 1800
+                            humanTurn = (gameState.whiteToMove and playerOne) or (
+                                    not gameState.whiteToMove and playerTwo)
                             drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
                         # Undo
                         if 417 <= location[1] < 471 and not gameOver:
@@ -253,6 +218,9 @@ def main(mode=MEDIUM_MODE):
                                 # move not in valid moves
                                 if not moveMade:
                                     playerClicks = [sqSelected]
+                                    
+                                    
+                                    
                 # RIGHT CLICK
                 elif e.button == 3 and not gameOver:
                     # PvP game
@@ -263,47 +231,10 @@ def main(mode=MEDIUM_MODE):
                         gameState.undoMove()
                     moveMade = True
                     gameOver = False
-        ######################################################################################
-        # ChessAI turn
-        # if not gameOver and not humanTurn and motlan:
-        #     # move = ChessAI.findBestMoveMinMax(gameState, validMoves)
-        #     depth = 2
-        #     if mode == EASY_MODE:
-        #         depth = 1
-        #     elif mode == MEDIUM_MODE:
-        #         depth = 2
-        #     elif mode == HARD_MODE:
-        #         depth = 3
 
-        #     # print(f"RUNNING GAME WITH:AUTO_MODE = {auto_mode}  | MODE = {mode}  | STRATEGY = {strategy}")
-        #     # Opponent AI
-        #     strategy_to_use = ChessAI.MIN_MAX_WITHOUT_PRUNING 
-        #     # strategy_to_use = ChessAI.MIN_MAX_WITH_BETA_PRUNING
-        #     # strategy_to_use=None
-        #     if AIEasyTurn:
-        #         move = ChessAI.move_with_strategy(gs=gameState, depth=1, strategy=strategy_to_use,
-        #                                           validMoves=validMoves)
-        #         # time.sleep(0.5)
-        #     # Our AI Agent
-        #     elif not AIEasyTurn:
-        #         move = ChessAI.move_with_strategy(gameState, depth, strategy_to_use, validMoves)
-
-        #     # if AIEasyTurn:
-        #     #     move = ChessAIEasy.findBestMoveMinMax(gameState, validMoves)
-        #     #     # time.sleep(0.5)
-        #     # elif not AIEasyTurn:
-        #     #     move = ChessAI.findBestMoveMinMax(gameState, validMoves)
-
-        #     # if AILEVEL == MEDIUM_MODE:
-        #     #     move = ChessAI.findBestMoveMinMax(gameState, validMoves)
-        #     # else:
-        #     #     move = ChessAIEasy.findBestMoveMinMax(gameState, validMoves)
-
-        #     if move is None:
-        #         move = ChessAI.findRandomMove(validMoves)
-        #     gameState.makeMove(move)
-        #     moveMade = True
-
+        if PAUSE:
+            continue
+        
         if moveMade:
             validMoves = gameState.getValidMoves()
             moveMade = False
@@ -338,17 +269,10 @@ def main(mode=MEDIUM_MODE):
         if gameState.checkmate:
             gameOver = True
             gameOverText(screen, gameState.whiteToMove)
-            # if gameState.color == 1:
-            #     gameOverText(screen, gameState.whiteToMove)
-            # else:
-            #     gameOverText(screen, ~gameState.whiteToMove)
         elif gameState.stalemate:
             gameOver = True
             gameOverText(screen, gameState.whiteToMove)
-            # if gameState.color == 1:
-            #     gameOverText(screen, gameState.whiteToMove)
-            # else:
-            #     gameOverText(screen, ~gameState.whiteToMove)
+
         if gameState.whiteToMove:
             p1Time -= time.time() - start_time if p1Time > 0 else 0
         else:
