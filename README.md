@@ -1,18 +1,32 @@
 # How to run
-### Cd to ./ChessAI.py
-### Run with configuration Menu (Old code)
-python ChessMain.py
-### Run Auto Chess with Our agent easy mode
-```python
-python ChessMain.py TERMINAL EASY WHITE_AGENT_OPPONENT_BLACK
+
+## Play Offline
+
+### Run with menu to choose
 ```
-### Run Auto Chess with Our agent MEDIUM mode
-```python
-python ChessMain.py TERMINAL MEDIUM WHITE_AGENT_OPPONENT_BLACK
+python .\ChessMain.py MAN x
+```
+X is difficulty from 1 -> 3
+
+### Run 2 bot versus 
+```
+python .\ChessMain.py AUTO x
+```
+X is difficulty from 1 -> 3
+below bot is stupid, the above one is good with x level
+
+### Run with menu, default level is 2
+```
+python .\ChessMain.py
 ```
 
-### Run Auto Chess with Our agent MEDIUM mode with Our agent as black (move second)
-```python
-python ChessMain.py TERMINAL MEDIUM BLACK_AGENT_OPPONENT_WHITE
+
+## Play online
+Open 1 terminal and run Server
+```
+python .\server.py
 ```
 
+Then open 2 other terminal and run
+```
+python .\ChessOnline.py
