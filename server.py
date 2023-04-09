@@ -7,6 +7,11 @@ data_list1 = []
 data_list2 = []
 
 
+name_list1 = []
+name_list2 = []
+
+
+
 def get_player2(conn):
     player2 = None
     if conn in data_list1:
@@ -23,7 +28,8 @@ def get_player2(conn):
 def handleClient(conn, addr):
     # with every client side
     player2 = None
-    global data_list1, data_list2
+    global data_list1, data_list2, name_list1, name_list2
+
     while True:
         try:
             msg = conn.recv(1024).decode(FORMAT)
@@ -32,20 +38,26 @@ def handleClient(conn, addr):
             conn.close()
             break
         msg = msg.split(" ")
+        
         if msg[0] == 'USERNAME':
             if len(data_list1) <= len(data_list2):
+                name_list1.append(msg[1])
                 data_list1.append(conn)
                 conn.sendall('WHITE'.encode(FORMAT))
             else:
                 data_list2.append(conn)
                 conn.sendall('BLACK'.encode(FORMAT))
-            print('User', 'connected')
+                conn.sendall(f"OPPONENT {name_list1[len(name_list1) - 1]}".encode(FORMAT))
+                get_player2(conn).sendall(f"OPPONENT {msg[1]}".encode(FORMAT))
+
+            print('User', msg[1], 'connected')
 
 
         if (msg[0] == 'EXIT'):
             print('[CLOSE]', addr)
             conn.close()
             return
+        
         if (msg[0] == 'EXIT2'):
             print('[CLOSE]', addr)
             player2 = get_player2(conn)
@@ -53,6 +65,7 @@ def handleClient(conn, addr):
                 return
             conn.close()
             return
+        
         if (msg[0] == 'MOVE'):
             player2 = get_player2(conn)
             if player2 is None:

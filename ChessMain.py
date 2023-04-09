@@ -4,6 +4,7 @@ import ChessEngine
 import ChessAI
 import time
 import sys
+import ChessOnline
 
 EASY_MODE = "1"
 MEDIUM_MODE = "2"
@@ -69,13 +70,8 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
                     menuGame = False
                 if e.type == p.MOUSEBUTTONDOWN:
                     location = p.mouse.get_pos()  # (x, y) location of mouse
-                    # print(location)
+                    print(location)
                     if 540 <= location[1] < 590:
-                        # One Player
-                        # if 150 <= location[0] < 300:
-                        #     playerOne = True
-                        #     playerTwo = False
-                        #     COLORFLAG = True
                         if 300 <= location[0] < 450:
                             playerOne = True
                             playerTwo = False
@@ -90,8 +86,14 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
                             playerOne = False
                             playerTwo = False
                             playerAI = True
-                        isPlaying = True  # Game start
-                        menuGame = False
+                        
+                    elif 664 <= location[1] <= 724:
+                        if 500 <= location[0] < 700:
+                            menuGame = False
+                            ChessOnline.main()
+
+                    isPlaying = True  # Game start
+                    menuGame = False
             p.display.flip()
     elif auto_mode == TERMINAL_MODE:
         playerOne = False
@@ -178,11 +180,7 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
                             humanTurn = (gameState.whiteToMove and playerOne) or (
                                     not gameState.whiteToMove and playerTwo)
                             drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
-                            
-                            
-                            
-                            
-                            
+
                         # Start a new 2 player game
                         if 230 <= location[1] < 280:
                             gameState = ChessEngine.GameState()
@@ -202,18 +200,14 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
                                     not gameState.whiteToMove and playerTwo)
                             drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
                             
-                            
-                            
                         # Start a new none player game
                         if 330 <= location[1] < 380:
                             gameState = ChessEngine.GameState()
-
                             # gameState.whiteToMove = bool(random.getrandbits(1))
                             # global COLORGAME
                             COLORGAME = not COLORGAME
                             FISRTMOVE = not FISRTMOVE
                             # Our Agent:  True  --> Go first, False --> Go Second
-
                             # if player_option == OUR_AI_WHITE:
                             #     FIRSTMOVE = True
                             # elif player_option == OUR_AI_BLACK:
@@ -249,12 +243,9 @@ def main(auto_mode=SCREEN_MODE, mode=HARD_MODE):
                             gameOver = False
                             p1Time = p2Time = 1800
                             drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
+                    
                     if PAUSE:
                         continue
-                    
-                    
-                    
-                    
                     
                     # Mouse in board and it's human turn
                     if MENU + BORDER <= location[0] < MENU + BORDER + BOARD \
@@ -415,7 +406,7 @@ def loadImages():
 
 def drawMenuState(screen):
     # Cai menu 1 nay moi la menu :v
-    board = p.transform.scale(p.image.load("chessv2/menu1.png"), (WIDTH, HEIGHT))
+    board = p.transform.scale(p.image.load("chessv2/menualo.png"), (WIDTH, HEIGHT))
     screen.blit(board, (0, 0))
 
 
