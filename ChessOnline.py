@@ -192,9 +192,8 @@ def main(mode=MEDIUM_MODE):
 
         screen.fill((100, 100, 100))
         font = p.font.Font(None, 60)
-        screen.blit(font.render("Waiting for an opponent...", True, (255, 255, 255)), (300, 300))
+        screen.blit(font.render("Waiting for an opponent...", True, (255, 255, 255)), (350, 350))
         p.display.update()
-
 
     font = p.font.Font(None, 40)
 
