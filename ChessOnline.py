@@ -180,7 +180,6 @@ def main(mode=MEDIUM_MODE):
     
     nameOnTop = True
     connect_server(text)
-    txt_surface = font.render(text, True, (255, 255, 255))
 
     threadingOponent = False    
     
@@ -196,7 +195,7 @@ def main(mode=MEDIUM_MODE):
         p.display.update()
 
     font = p.font.Font(None, 40)
-
+    txt_surface = font.render(text, True, (255, 255, 255))
     txt_op_surface = font.render(opponent, True, (255, 255, 255))
 
     if (turned and gameState.whiteToMove) or (not turned and not gameState.whiteToMove):
