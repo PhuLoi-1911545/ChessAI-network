@@ -42,27 +42,17 @@ AILEVEL = True
 
 FISRTMOVE = True
 
-
 PAUSE = False
 
-# boardreverse = [
-#             ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-#             ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR'],
-#             ['--', '--', '--', '--', '--', '--', '--', '--'],
-#             ['--', '--', '--', '--', '--', '--', '--', '--'],
-#             ['--', '--', '--', '--', '--', '--', '--', '--'],
-#             ['--', '--', '--', '--', '--', '--', '--', '--'],
-#             ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
-#             ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp']]
 
 
-def connect_server():
+def connect_server( username ):
     global client, turned, start_threading, screen
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print('CLIENT SIDE')
     client.connect((HOST, SERVER_PORT))
     print('client address:', client.getsockname())
-    msg = "USERNAME alo address:"
+    msg = f"USERNAME {username}"
     client.sendall(msg.encode(FORMAT))
 
     msg = client.recv(1024).decode(FORMAT)
@@ -76,7 +66,7 @@ def connect_server():
         start_threading = True
 
 def recv_mess():
-    global turned, client, ok, gameState, moveMade
+    global turned, client, ok, gameState, moveMade, opponent
     
     try:
         msg = client.recv(1024).decode(FORMAT)
@@ -90,15 +80,20 @@ def recv_mess():
         move = ChessEngine.Move((int(msg[1]), int(msg[2])), (int(msg[3]), int(msg[4])), gameState.board)
         gameState.makeMove(move)
         moveMade = True
-        
+    
+    if (msg[0] == 'OPPONENT'):
+        print("opponent", msg[1])
+        opponent = msg[1]
+
+
     if msg[0] == 'EXIT2':
         print('LOSE')
         ok = False
         client.sendall("EXIT".encode(FORMAT))
 
 def main(mode=MEDIUM_MODE):
-    global client, turned, start_threading
-    connect_server()
+    global client, turned, start_threading, opponent 
+    opponent = None
 
     p.init()
     global screen
@@ -121,17 +116,7 @@ def main(mode=MEDIUM_MODE):
     clock = p.time.Clock()
     global gameState
     gameState = ChessEngine.GameState()
-    # if player_option == OUR_AI_WHITE:
-    #     # FIRSTMOVE = False
-    #     COLORGAME = not COLORGAME
-    # elif player_option == OUR_AI_BLACK:
-    #     # FIRSTMOVE = True
-    #     COLORGAME = not COLORGAME
-    # gameState.whiteToMove = FISRTMOVE
 
-    # EasyAI
-    # if gameState.color == 1:
-    #     gameState.board = boardreverse
     validMoves = gameState.getValidMoves()  # Get all the valid move
     global moveMade # Moving a piece
     moveMade = False
@@ -142,6 +127,80 @@ def main(mode=MEDIUM_MODE):
     motlan = True
     global PAUSE
 
+    loginGame = True
+    font = p.font.Font(None, 32)
+    input_box = p.Rect(520, 540, 250, 40)
+    color_inactive = p.Color('lightskyblue3')
+    color_active = p.Color('dodgerblue2')
+    color = color_inactive
+    text = ''
+    active = False
+
+    while loginGame:
+        background = p.transform.scale(p.image.load("chessv2/menuusername.png"), (WIDTH, HEIGHT))
+        screen.blit(background, (0, 0))
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                p.quit()
+                quit()
+            
+            if event.type == p.MOUSEBUTTONDOWN:
+                # kiểm tra xem con trỏ chuột có nằm trong hộp văn bản không
+                location = p.mouse.get_pos()
+                print(location)
+                if input_box.collidepoint(event.pos):
+                    active = not active
+                elif 500 <= location[0] <= 650 and 615 <= location[1] <= 675:
+                    loginGame = False
+                    print(text)
+                else:
+                    active = False
+                color = color_active if active else color_inactive
+            
+            if event.type == p.KEYDOWN:
+                if active:
+                    if event.key == p.K_RETURN:
+                        # lấy giá trị từ hộp văn bản khi người dùng nhấn Enter
+                        loginGame = False
+                        print(text)
+                    elif event.key == p.K_BACKSPACE:
+                        # xóa ký tự cuối cùng khi người dùng nhấn phím Backspace
+                        text = text[:-1]
+                    else:
+                        # thêm ký tự mới vào hộp văn bản
+                        text += event.unicode
+        # vẽ màn hình
+        # screen.fill((255, 255, 255))
+        # vẽ hộp văn bản
+        p.draw.rect(screen, color, input_box, 2)
+        # vẽ nội dung trong hộp văn bản
+        txt_surface = font.render(text, True, (255, 255, 255))
+        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        p.display.update()
+    
+    nameOnTop = True
+    connect_server(text)
+
+    threadingOponent = False    
+    
+    while opponent == None:
+        if threadingOponent == False:
+            start_threading = True
+            thr = threading.Thread(target=recv_mess)
+            thr.start()
+
+        screen.fill((100, 100, 100))
+        font = p.font.Font(None, 60)
+        screen.blit(font.render("Waiting for an opponent...", True, (255, 255, 255)), (350, 350))
+        p.display.update()
+
+    font = p.font.Font(None, 40)
+    txt_surface = font.render(text, True, (255, 255, 255))
+    txt_op_surface = font.render(opponent, True, (255, 255, 255))
+
+    if (turned and gameState.whiteToMove) or (not turned and not gameState.whiteToMove):
+        nameOnTop = False
+
     while isPlaying:
         time.sleep(0.2)
         start_time = time.time()
@@ -149,21 +208,7 @@ def main(mode=MEDIUM_MODE):
         screen.blit(background, (0, 0))
         # If player 1 turn and white turn or player 2 turn and black turn
         humanTurn = (gameState.whiteToMove and playerOne) or (not gameState.whiteToMove and playerTwo)
-        # AIEasyTurn = (not gameState.whiteToMove and playerAI)
-       
-        print('turned', turned, 'start_threading', start_threading) 
-
-        # if (turned == False):
-        #     for e in p.event.get():
-        #         if e.type == p.QUIT:
-        #             isPlaying = False
-                    
-        #     drawGameState(screen, gameState, gameState.getValidMoves(), sqSelected)
-            
-        #     if (start_threading == True):
-        #         start_threading = False
-        #         thr = threading.Thread(target=recv_mess)
-        #         thr.start()
+     
         
         for e in p.event.get():
             if e.type == p.QUIT:
@@ -174,6 +219,7 @@ def main(mode=MEDIUM_MODE):
                     # LEFT CLICK
                     if e.button == 1:
                         location = p.mouse.get_pos()  # (x, y) location of mouse
+                        print(location)
                         {
                         # print(location)
                         # Sidebar
@@ -328,6 +374,7 @@ def main(mode=MEDIUM_MODE):
                     location = p.mouse.get_pos()
                     x = location[0]
                     y = location[1]
+                    
                     if 310 <= y < 396:
                         if 217 <= x < 298:
                             gameState.pawnPromotion('B')
@@ -363,7 +410,16 @@ def main(mode=MEDIUM_MODE):
         # remain_time = TIME_LIMIT - int(time.time() - start_time)
         gameOver = drawTime(screen, int(p1Time), int(p2Time), gameState.whiteToMove, gameOver)
         clock.tick(MAX_FPS)
+
+        if nameOnTop:
+            screen.blit(txt_surface, (670, 20))
+            screen.blit(txt_op_surface, (670, 765))
+        else:
+            screen.blit(txt_op_surface, (670, 20))
+            screen.blit(txt_surface, (670, 765))
+
         p.display.flip()
+
 
 '''
 Initialize a global dictionary of images. This will be called exactly once in the main
